@@ -110,7 +110,7 @@ export default class App extends Component {
             onLoading={this.onLoadingMore}
           />
         )}
-        {!disabled &&( <Scroll onToTop={this.onToTop} />)}
+        {!disabled && (<Scroll onToTop={this.onToTop}/>)}
         {showModal && (
           <Modal toggleModal={this.toggleModal}>
             <img src={largeImageURL} alt={tags} />

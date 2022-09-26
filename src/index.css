@@ -7,7 +7,18 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  scroll-behavior: auto;
+  
+}
+::-webkit-scrollbar {
+  /* 1 - скроллбар */
+  width: 5px;
+  height: 5px;
+  background-color: #d1d1d1;
+}
+::-webkit-scrollbar-thumb {
+  /* 5 - ползунок */
+  border-radius: 2px;
+  background-color:#4fa94d;
 }
 
 code {
