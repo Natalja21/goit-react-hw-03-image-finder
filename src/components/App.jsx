@@ -14,11 +14,13 @@ export default class App extends Component {
     images: [],
     keyword: '',
     page: 1,
+    per_page: 12,
+    largeImageURL: '',
+    tags: '',
     loading: false,
     error: null,
     showModal: false,
-    largeImageURL: '',
-    tags : ''
+    disabled : true,
   };
   handleSubmitSearchBar = keyword => {
     this.setState({ keyword, page: 1 });
@@ -36,36 +38,43 @@ export default class App extends Component {
     }
   }
   fetchImages = async () => {
-    const { keyword, page } = this.state;
-    this.setState({ loading: true });
+    const { keyword, page, per_page } = this.state;
+    this.setState({ loading: true, disabled : true });
     try {
-      const data = await getDataImages(keyword, page);
+      const data = await getDataImages(keyword, page, per_page);
+      console.log(data);
       if (data.total === 0) {
         toast.warning(`"${keyword}" not found!`, {
           theme: 'colored',
           closeOnClick: true,
         });
-        this.setState({ images: [] });
+        this.setState({ images: [], disabled : true });
       }
       this.setState(prevState => ({
         images: [...prevState.images, ...data.hits],
+        disabled : false,
+        per_page,
       }));
+      if (Math.ceil(page * per_page) > data.totalHits) {
+        this.setState({ disabled: true });
+      }
     } catch (error) {
       this.setState({ error });
     } finally {
       this.setState({ loading: false });
     }
   };
-  toggleModal = (largeImageURL, tags )=> {
+  toggleModal = (largeImageURL, tags) => {
     this.setState(({ showModal }) => ({
       showModal: !showModal,
       largeImageURL,
-      tags
+      tags,
     }));
   };
 
   render() {
-    const { loading, images, error, showModal, largeImageURL,tags } = this.state;
+    const { loading, images, error, showModal, largeImageURL, tags, disabled  } =
+      this.state;
     return (
       <div className={styles.App}>
         <SearchBar onSubmitSearchBar={this.handleSubmitSearchBar} />
@@ -75,10 +84,10 @@ export default class App extends Component {
             theme: 'colored',
             closeOnClick: true,
           })}
-        {images.length !== 0 && (
+        {!disabled && (
           <ImageGallery images={images} toggleModal={this.toggleModal} />
         )}
-        {images.length !== 0 && (
+        {!disabled && (
           <LoadMoreBtn
             type="button"
             text="Load More"
