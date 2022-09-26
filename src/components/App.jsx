@@ -40,7 +40,6 @@ export default class App extends Component {
     this.setState({ loading: true });
     try {
       const data = await getDataImages(keyword, page);
-      console.log(data);
       if (data.total === 0) {
         toast.warning(`"${keyword}" not found!`, {
           theme: 'colored',
