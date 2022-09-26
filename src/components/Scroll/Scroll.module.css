@@ -1,0 +1,18 @@
+
+    .btn__top {
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            background-color:#4fa94d;
+            color:#fff;
+            border-radius: 5px;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            position: fixed;
+            bottom: 40px;
+            right: 10px;
+            z-index: 1;
+        
+}

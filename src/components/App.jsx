@@ -8,6 +8,7 @@ import LoadMoreBtn from './Button/Button';
 import Loader from './Loader/Loader';
 import styles from '../components/App.module.css';
 import Modal from './Modal/Modal';
+import Scroll from './Scroll/Scroll';
 
 export default class App extends Component {
   state = {
@@ -18,16 +19,11 @@ export default class App extends Component {
     largeImageURL: '',
     tags: '',
     loading: false,
-    error: null,
     showModal: false,
-    disabled : true,
+    disabled: true,
+    error: null,
   };
-  handleSubmitSearchBar = keyword => {
-    this.setState({ keyword, page: 1 });
-  };
-  onLoadingMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
-  };
+
   componentDidUpdate(_, prevState) {
     const { page, keyword } = this.state;
     if ((keyword && prevState.keyword !== keyword) || page > prevState.page) {
@@ -36,10 +32,17 @@ export default class App extends Component {
     if (prevState.keyword !== keyword) {
       this.setState({ images: [] });
     }
+    if (page > 1) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }
+
   fetchImages = async () => {
     const { keyword, page, per_page } = this.state;
-    this.setState({ loading: true, disabled : true });
+    this.setState({ loading: true, disabled: true });
     try {
       const data = await getDataImages(keyword, page, per_page);
       if (data.total === 0) {
@@ -47,22 +50,30 @@ export default class App extends Component {
           theme: 'colored',
           closeOnClick: true,
         });
-        this.setState({ images: [], disabled : true });
+        this.setState({ images: [], disabled: true });
       }
       this.setState(prevState => ({
         images: [...prevState.images, ...data.hits],
-        disabled : false,
+        disabled: false,
         per_page,
       }));
       if (Math.ceil(page * per_page) > data.totalHits) {
         this.setState({ disabled: true });
       }
     } catch (error) {
-      this.setState({ error });
+      const errorMessage = toast.warning(
+        'Oops, something went wrong try again later!',
+        {
+          theme: 'colored',
+          closeOnClick: true,
+        }
+      );
+      this.setState({ error: errorMessage });
     } finally {
       this.setState({ loading: false });
     }
   };
+
   toggleModal = (largeImageURL, tags) => {
     this.setState(({ showModal }) => ({
       showModal: !showModal,
@@ -71,20 +82,26 @@ export default class App extends Component {
     }));
   };
 
+  handleSubmitSearchBar = keyword => {
+    this.setState({ keyword, page: 1 });
+  };
+
+  onLoadingMore = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
+  };
+  onToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   render() {
-    const { loading, images, error, showModal, largeImageURL, tags, disabled  } =
+    const { loading, images, showModal, largeImageURL, tags, disabled} =
       this.state;
     return (
       <div className={styles.App}>
         <SearchBar onSubmitSearchBar={this.handleSubmitSearchBar} />
         {loading && <Loader />}
-        {error &&
-          toast.warning('Oops, something went wrong try again later!', {
-            theme: 'colored',
-            closeOnClick: true,
-          })}
         {!disabled && (
-          <ImageGallery images={images} toggleModal={this.toggleModal} />
+         ( <ImageGallery images={images} toggleModal={this.toggleModal} />)
         )}
         {!disabled && (
           <LoadMoreBtn
@@ -93,6 +110,7 @@ export default class App extends Component {
             onLoading={this.onLoadingMore}
           />
         )}
+        {!disabled &&( <Scroll onToTop={this.onToTop} />)}
         {showModal && (
           <Modal toggleModal={this.toggleModal}>
             <img src={largeImageURL} alt={tags} />
