@@ -15,11 +15,13 @@ export default class App extends Component {
     images: [],
     keyword: '',
     page: 1,
+    totalHits: null,
     largeImageURL: '',
     tags: '',
     loading: false,
     showModal: false,
     error: null,
+    invisible: false,
   };
 
   componentDidUpdate(_, prevState) {
@@ -39,19 +41,30 @@ export default class App extends Component {
   }
 
   fetchImages = async () => {
-    const { keyword, page } = this.state;
-    this.setState({ loading: true });
+    const { keyword, page, images } = this.state;
+    this.setState({ loading: true, invisible: true });
     try {
-      const data = await getDataImages(keyword, page);
-      if (data.total === 0) {
-        toast.warning(`Sorry, there are no images matching search query "${keyword}". Please try again.`, {
-          theme: 'colored',
-          closeOnClick: true,
-        });
-        this.setState({ images: [] });
+      const { totalHits, hits } = await getDataImages(keyword, page);
+      if (totalHits === 0) {
+        toast.warning(
+          `Sorry, there are no images matching search query "${keyword}". Please try again.`,
+          {
+            theme: 'colored',
+            closeOnClick: true,
+          }
+        );
+        this.setState({ images: [], invisible: true });
+      }
+
+      if (totalHits > images.length + hits.length) {
+        this.setState({ invisible: false });
+      }
+      if (totalHits === images.length + hits.length) {
+        this.setState({ invisible: true });
       }
       this.setState(prevState => ({
-        images: [...prevState.images, ...data.hits],
+        images: [...prevState.images, ...hits],
+        totalHits,
       }));
     } catch (error) {
       const errorMessage = toast.warning(
@@ -87,9 +100,10 @@ export default class App extends Component {
   };
 
   render() {
-    const { loading, images, showModal, largeImageURL, tags } = this.state;
-    const { handleSubmitSearchBar,onLoadingMore, toggleModal, onToTop } = this;
-    const imagesLength = images.length !== 0
+    const { loading, images, showModal, largeImageURL, tags, invisible } =
+      this.state;
+    const { handleSubmitSearchBar, onLoadingMore, toggleModal, onToTop } = this;
+    const imagesLength = images.length !== 0;
 
     return (
       <div className={styles.App}>
@@ -98,7 +112,7 @@ export default class App extends Component {
         {imagesLength && (
           <ImageGallery images={images} toggleModal={toggleModal} />
         )}
-        {imagesLength && (
+        {imagesLength && !invisible && (
           <LoadMoreBtn
             type="button"
             text="Load More"
