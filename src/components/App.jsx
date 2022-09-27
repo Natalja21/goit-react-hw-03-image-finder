@@ -44,7 +44,7 @@ export default class App extends Component {
     try {
       const data = await getDataImages(keyword, page);
       if (data.total === 0) {
-        toast.warning(`"${keyword}" not found!`, {
+        toast.warning(`Sorry, there are no images matching search query "${keyword}". Please try again.`, {
           theme: 'colored',
           closeOnClick: true,
         });
